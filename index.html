@@ -5,75 +5,164 @@
 <meta http-equiv="x-ua-compatible" content="ie=edge, chrome=1" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1">
 <title>Accountkit</title>
+  
+
+<!-- HTTPS required. HTTP will give a 403 forbidden response -->
+<script src="https://sdk.accountkit.com/en_US/sdk.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+
+    <style>
+      body {
+        background-color: #eeeeee;
+        padding: 5%;
+      }
+      form {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .input-country {
+        color: #07a9ac;
+        background-color: #ffcc00;
+        /* width: 10vw; */
+        height: 8vw;
+        border-radius: 4px;
+        border-width: 0;
+        margin-right: 2%;
+        padding: 0;
+        padding-left: 3%;
+      }
+      .input-cell {
+        /* color: #07a9ac; */
+        /* background-color: #ffcc00; */
+        /* width: 60vw; */
+        height: 8vw;
+        border-radius: 4px;
+        border-width: 0;
+      }
+      .btn-form {
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 50%;
+        margin-top: 10%;
+        margin-bottom: 3%;
+      }
+      .btn-sms {
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        width: 50%;
+      }
+    </style>
 </head>
 <body>
-
-<script src="https://sdk.accountkit.com/en_US/sdk.js"></script>
-<script>
-  // awaitPostMessage() This is needed as window.postMessage is not working gracefully for android
-function awaitPostMessage() {
-  var isReactNativePostMessageReady = !!window.originalPostMessage;
-  var queue = [];
-  var currentPostMessageFn = function store(message) {
-    if (queue.length > 100) queue.shift();
-    queue.push(message);
-  };
-  if (!isReactNativePostMessageReady) {
-    var originalPostMessage = window.postMessage;
-    Object.defineProperty(window, 'postMessage', {
-      configurable: true,
-      enumerable: true,
-      get: function () {
-        return currentPostMessageFn;
-      },
-      set: function (fn) {
-        currentPostMessageFn = fn;
-        isReactNativePostMessageReady = true;
-        setTimeout(sendQueue, 0);
-      }
-    });
-    window.postMessage.toString = function () {
-      return String(originalPostMessage);
-    };
-  }
-
-  function sendQueue() {
-    while (queue.length > 0) window.postMessage(queue.shift());
-  }
-}
-
-awaitPostMessage();       
-function loadAccountKit()
-  {
-    AccountKit.init(
-    {
-        appId: 533770340330052,
-        state: new Date().getTime(), // This should be your XSRF_TOKEN
-        version: "v1.1",
-        display: "modal",
-        debug: true,  // Helps in understanding what went wrong.
-        fbAppEventsEnabled: true
-    }
-);
-
-
-AccountKit.login('PHONE', {},
-    function (response) {
-        if (response.status === "PARTIALLY_AUTHENTICATED") {
-            window.postMessage(JSON.stringify({loggedIn:true}))
-        }
-        else if (response.status === "NOT_AUTHENTICATED") {
-            // handle authentication failure
-        }
-        else if (response.status === "BAD_PARAMS") {
-            // handle bad parameters
-        }
-    }
-);
-}
- 
-  setTimeout(loadAccountKit,1000)
   
+  
+    <!-- <button onclick="smsLogin();">Login via SMS</button> -->
+    <form
+      method="get"
+      action="https://www.accountkit.com/v1.0/basic/dialog/sms_login"
+    >
+      <div class="form-group row">
+        <input
+          value="+55"
+          name="country_code"
+          id="country_code"
+          disabled
+          class="col-2 input-country form-control"
+        />
+        <input
+          value="11949689642"
+          placeholder="phone number"
+          name="phone_number"
+          id="phone_number"
+          class="col-9 input-cell form-control"
+        />
+      </div>
+      <input type="hidden" name="app_id" value="427993981264047" />
+<!--       <input
+        type="hidden"
+        name="redirect"
+        value="https://webhook.site/#!/bcef288d-1a33-4e62-997d-37e1ef065e15"
+      /> -->
+      <input type="hidden" name="state" value="{new" Date().getTime()} />
+      <input type="hidden" name="fbAppEventsEnabled" value="true" />
+      <div class="form-group row">
+        <button type="submit" class="col-sm-12 btn btn-primary btn-form">
+          Login
+        </button>
+      </div>
+    </form>
+
+<input value="+55" id="country_code" />
+<input placeholder="phone number" id="phone_number"/>
+<button onclick="smsLogin();">Login via SMS</button>
+<div>OR</div>
+<input placeholder="email" id="email"/>
+<button onclick="emailLogin();">Login via Email</button>
+
+    
+
+
+<script>
+  // initialize Account Kit with CSRF protection
+  AccountKit_OnInteractive = function(){
+    AccountKit.init(
+      {
+        appId:427993981264047,
+        state: new Date().getTime(),
+        version: "v1.1",
+        fbAppEventsEnabled:true,
+        debug:true,
+        redirect:"https://uppdate.app"
+      }
+    );
+  };
+
+  // login callback
+  function loginCallback(response) {
+    if (response.status === "PARTIALLY_AUTHENTICATED") {
+      var code = response.code;
+      var csrf = response.state;
+      // Send code to server to exchange for access token
+    }
+    else if (response.status === "NOT_AUTHENTICATED") {
+      // handle authentication failure
+    }
+    else if (response.status === "BAD_PARAMS") {
+      // handle bad parameters
+    }
+  }
+
+  // phone form submission handler
+  function smsLogin() {
+    var countryCode = document.getElementById("country_code").value;
+    var phoneNumber = document.getElementById("phone_number").value;
+    AccountKit.login(
+      'PHONE', 
+      {countryCode: countryCode, phoneNumber: phoneNumber}, // will use default values if not specified
+      loginCallback
+    );
+  }
+
+
+  // email form submission handler
+  function emailLogin() {
+    var emailAddress = document.getElementById("email").value;
+    AccountKit.login(
+      'EMAIL',
+      {emailAddress: emailAddress},
+      loginCallback
+    );
+  }
+</script>
+
+
 </script>
 </body>
 </html>
