@@ -85,11 +85,11 @@
         />
       </div>
       <input type="hidden" name="app_id" value="427993981264047" />
-<!--       <input
+      <input
         type="hidden"
         name="redirect"
-        value="https://webhook.site/#!/bcef288d-1a33-4e62-997d-37e1ef065e15"
-      /> -->
+        value="https://uppdate.app/"
+      />
       <input type="hidden" name="state" value="{new" Date().getTime()} />
       <input type="hidden" name="fbAppEventsEnabled" value="true" />
       <div class="form-group row">
@@ -119,13 +119,14 @@
         version: "v1.1",
         fbAppEventsEnabled:true,
         debug:true,
-        redirect:"https://uppdate.app"
+        redirect:"https://uppdate.app/"
       }
     );
   };
 
   // login callback
   function loginCallback(response) {
+    console.log(response);
     if (response.status === "PARTIALLY_AUTHENTICATED") {
       var code = response.code;
       var csrf = response.state;
